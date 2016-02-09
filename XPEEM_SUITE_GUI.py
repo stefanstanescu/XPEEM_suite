@@ -203,6 +203,7 @@ class myGUIapp(QtGui.QMainWindow,XPEEM_GUI.Ui_MainWindow):
                    ]
         for myVar in varList:
             exec('%s = None'%myVar)
+        self.plotView.clear()
         
 def main():		
     app = QtGui.QApplication(sys.argv)
