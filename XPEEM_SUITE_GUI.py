@@ -6,6 +6,15 @@ Created on Mon Jan 25 17:37:43 2016
 XPEEM SUITE GUI
 """
 
+__author__ = "Stefan Stanescu"
+__copyright__ = "Copyright 2016, HERMES beamline"
+__credits__ = ["Stefan Stanescu", "Emiliano Fonda"]
+__license__ = "GPL"
+__version__ = "1.0.0"
+__maintainer__ = "Stefan Stanescu"
+__email__ = "stefan.stanescu@synchrotron-soleil.fr"
+__status__ = "Production"
+
 import os
 import numpy as np
 import sys
