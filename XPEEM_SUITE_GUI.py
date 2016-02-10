@@ -23,7 +23,7 @@ class myGUIapp(QtGui.QMainWindow,XPEEM_GUI.Ui_MainWindow):
         self.load2XASBtn.clicked.connect(self.load2XASfile)
         self.loadNormFileBtn.clicked.connect(self.loadNormFile)
         self.load2polBtn.clicked.connect(self.load2pol)
-        self.load2nrjBtn.clicked.connect(self.load2nrj)
+        self.showTIFFStackBtn.clicked.connect(self.showTIFF)
         self.imgNorm = None
         self.myPickROI = None
         self.pickROIBtn.clicked.connect(self.pickROI)
@@ -96,22 +96,6 @@ class myGUIapp(QtGui.QMainWindow,XPEEM_GUI.Ui_MainWindow):
         self.imgNormStack2 = np.array(self.imgNormStack2)
         self.imageView.setImage(self.imgNormStack2)        
 
-    def load2nrj(self):
-        self.fileName1 = str(QtGui.QFileDialog.getOpenFileName(self,'Pick first DATA file'))
-        self.noSlice1,self.imgStack1,self.myShape1 = xpeem.loadHDF5(self.fileName1)
-        self.imageView.setImage(self.imgStack1)
-        self.fileName2 = str(QtGui.QFileDialog.getOpenFileName(self,'Pick second DATA file'))
-        self.noSlice2,self.imgStack2,self.myShape2 = xpeem.loadHDF5(self.fileName2)
-        self.imageView.setImage(self.imgStack2)
-        if self.imgNorm == None:
-            self.imgNorm = 1
-        else:
-            pass
-        self.imgNormStack1 = [self.imgStack1[theSlice1].astype('float32')/self.imgNorm for theSlice1 in range(self.noSlice1)]
-        self.imgNormStack1 = np.array(self.imgNormStack1)
-        self.imgNormStack2 = [self.imgStack2[theSlice2].astype('float32')/self.imgNorm for theSlice2 in range(self.noSlice2)]
-        self.imgNormStack2 = np.array(self.imgNormStack2)
-        self.imageView.setImage(self.imgNormStack2)        
 
     def toogleStack1View(self):
         self.imageView.setImage(self.imgStack1)
@@ -121,8 +105,11 @@ class myGUIapp(QtGui.QMainWindow,XPEEM_GUI.Ui_MainWindow):
         self.switchStackShow1Btn.setChecked(False)
         
 
-    def calcSingleSpectrum(self):
+    def calcSingleSpectrum(self):        
         self.myROI = self.myPickROI
+        if self.myPickROI == None:
+            imageSize = self.imgNormStack[0].shape
+            self.myROI = (imageSize[0]*1./4,imageSize[1]*1./4,imageSize[0]*1./2,imageSize[1]*1./2)
         print "THE ROI IS ======> ",self.myROI
         upsamplingFactor = 50
         with open(self.workDir+'Input_Args.txt','w') as myInput:
@@ -140,6 +127,9 @@ class myGUIapp(QtGui.QMainWindow,XPEEM_GUI.Ui_MainWindow):
 
     def calcDiffSpectra(self):
         self.myROI = self.myPickROI
+        if self.myPickROI == None:
+            imageSize = self.imgNormStack1[0].shape
+            self.myROI = (imageSize[0]*1./4,imageSize[1]*1./4,imageSize[0]*1./2,imageSize[1]*1./2)
         print "THE ROI IS ======> ",self.myROI
         upsamplingFactor = 50
         with open(self.workDir+'Input_Args.txt','w') as myInput:
@@ -158,6 +148,9 @@ class myGUIapp(QtGui.QMainWindow,XPEEM_GUI.Ui_MainWindow):
 
     def calcDiffImages(self):
         self.myROI = self.myPickROI
+        if self.myPickROI == None:
+            imageSize = self.imgNormStack1[0].shape
+            self.myROI = (imageSize[0]*1./4,imageSize[1]*1./4,imageSize[0]*1./2,imageSize[1]*1./2)
         print "THE ROI IS ======> ",self.myROI
         upsamplingFactor = 50
         with open(self.workDir+'Input_Args.txt','w') as myInput:
@@ -178,6 +171,11 @@ class myGUIapp(QtGui.QMainWindow,XPEEM_GUI.Ui_MainWindow):
     def plotDrift(self):
         self.sxsy = np.loadtxt(self.workDir+self.fileNameRoot1+"_shifts.txt")
         self.plotView.plot(self.sxsy[:,0],self.sxsy[:,1])
+
+    def showTIFF(self):
+        self.tiffFileName = str(QtGui.QFileDialog.getOpenFileName(self,'Pick a TIFF file'))
+        tiffImg = skimage.io.imread(self.tiffFileName)
+        self.imageView.setImage(tiffImg)
         
     def clearVariables(self):
         varList = ['self.fileName',
@@ -200,6 +198,7 @@ class myGUIapp(QtGui.QMainWindow,XPEEM_GUI.Ui_MainWindow):
                    'self.corrDiffImg',
                    'self.corrDiffStack',
                    'self.sxsy',
+                   'tiffFileName',
                    ]
         for myVar in varList:
             exec('%s = None'%myVar)
