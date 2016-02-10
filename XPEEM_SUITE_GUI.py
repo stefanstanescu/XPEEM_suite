@@ -19,10 +19,9 @@ class myGUIapp(QtGui.QMainWindow,XPEEM_GUI.Ui_MainWindow):
         super(myGUIapp,self).__init__(parent)
         self.setupUi(self)
         self.chooseWorkDirectoryBtn.clicked.connect(self.chooseWorkDir)
-        self.loadXASBtn.clicked.connect(self.loadXASfile)
-        self.load2XASBtn.clicked.connect(self.load2XASfile)
+        self.load1FileBtn.clicked.connect(self.load1file)
+        self.load2FilesBtn.clicked.connect(self.load2files)
         self.loadNormFileBtn.clicked.connect(self.loadNormFile)
-        self.load2polBtn.clicked.connect(self.load2pol)
         self.showTIFFStackBtn.clicked.connect(self.showTIFF)
         self.imgNorm = None
         self.myPickROI = None
@@ -50,7 +49,7 @@ class myGUIapp(QtGui.QMainWindow,XPEEM_GUI.Ui_MainWindow):
         #rescaleNormFactor = (self.imgNorm.max()/min([myImg.min() for myImg in self.imgStack]))
         #self.imgNorm = self.imgNorm/rescaleNormFactor
         
-    def loadXASfile(self):
+    def load1file(self):
         self.fileName = str(QtGui.QFileDialog.getOpenFileName(self,'Pick a DATA file'))
         self.noSlice,self.imgStack,self.myShape = xpeem.loadHDF5(self.fileName)
         self.imageView.setImage(self.imgStack)
@@ -62,7 +61,7 @@ class myGUIapp(QtGui.QMainWindow,XPEEM_GUI.Ui_MainWindow):
         self.imgNormStack = np.array(self.imgNormStack)
         self.imageView.setImage(self.imgNormStack)
        
-    def load2XASfile(self):
+    def load2files(self):
         self.fileName1 = str(QtGui.QFileDialog.getOpenFileName(self,'Pick first DATA file'))
         self.noSlice1,self.imgStack1,self.myShape1 = xpeem.loadHDF5(self.fileName1)
         self.imageView.setImage(self.imgStack1)
@@ -79,23 +78,6 @@ class myGUIapp(QtGui.QMainWindow,XPEEM_GUI.Ui_MainWindow):
         self.imgNormStack2 = np.array(self.imgNormStack2)
         self.imageView.setImage(self.imgNormStack2)
     
-    def load2pol(self):
-        self.fileName1 = str(QtGui.QFileDialog.getOpenFileName(self,'Pick first DATA file'))
-        self.noSlice1,self.imgStack1,self.myShape1 = xpeem.loadHDF5(self.fileName1)
-        self.imageView.setImage(self.imgStack1)
-        self.fileName2 = str(QtGui.QFileDialog.getOpenFileName(self,'Pick second DATA file'))
-        self.noSlice2,self.imgStack2,self.myShape2 = xpeem.loadHDF5(self.fileName2)
-        self.imageView.setImage(self.imgStack2)
-        if self.imgNorm == None:
-            self.imgNorm = 1
-        else:
-            pass
-        self.imgNormStack1 = [self.imgStack1[theSlice1].astype('float32')/self.imgNorm for theSlice1 in range(self.noSlice1)]
-        self.imgNormStack1 = np.array(self.imgNormStack1)
-        self.imgNormStack2 = [self.imgStack2[theSlice2].astype('float32')/self.imgNorm for theSlice2 in range(self.noSlice2)]
-        self.imgNormStack2 = np.array(self.imgNormStack2)
-        self.imageView.setImage(self.imgNormStack2)        
-
 
     def toogleStack1View(self):
         self.imageView.setImage(self.imgStack1)
