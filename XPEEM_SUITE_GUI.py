@@ -51,13 +51,6 @@ class myGUIapp(QtGui.QMainWindow,XPEEM_GUI.Ui_MainWindow):
         self.ROIposition = self.imageView.roi.pos()
         self.ROIsize = self.imageView.roi.size()
         self.myPickROI = (np.int(self.ROIposition[0]),np.int(self.ROIposition[1]),np.int(self.ROIsize[0]),np.int(self.ROIsize[1]))
-
-    def loadNormFile(self):
-        self.fileNameNorm = str(QtGui.QFileDialog.getOpenFileName(self,'Pick a NORMALISATION file'))
-        self.noSliceNorm,self.imgStackNorm,self.myShapeNorm = xpeem.loadHDF5(self.fileNameNorm)
-        self.imgNorm = np.sum(self.imgStackNorm,axis=0,dtype='float32')/len(self.imgStackNorm)
-        #rescaleNormFactor = (self.imgNorm.max()/min([myImg.min() for myImg in self.imgStack]))
-        #self.imgNorm = self.imgNorm/rescaleNormFactor
      
     def normalizeStack(self):
         if self.loadContext == 'ONE FILE':
@@ -84,21 +77,28 @@ class myGUIapp(QtGui.QMainWindow,XPEEM_GUI.Ui_MainWindow):
         
     def load1file(self):
         self.loadContext = 'ONE FILE'
-        self.fileName = str(QtGui.QFileDialog.getOpenFileName(self,'Pick a DATA file'))
+        self.fileName = str(QtGui.QFileDialog.getOpenFileName(self,'Pick a DATA file','', 'NeXuS (*.nxs)'))
         self.noSlice,self.imgStack,self.myShape = xpeem.loadHDF5(self.fileName)
         self.imageView.setImage(self.imgStack)
         self.changeLabelText(self.fileName)
        
     def load2files(self):
         self.loadContext = 'TWO FILES'
-        self.fileName1 = str(QtGui.QFileDialog.getOpenFileName(self,'Pick first DATA file'))
+        self.fileName1 = str(QtGui.QFileDialog.getOpenFileName(self,'Pick a DATA file','', 'NeXuS (*.nxs)'))
         self.noSlice1,self.imgStack1,self.myShape1 = xpeem.loadHDF5(self.fileName1)
         self.imageView.setImage(self.imgStack1)
         self.changeLabelText(self.fileName1)
-        self.fileName2 = str(QtGui.QFileDialog.getOpenFileName(self,'Pick second DATA file'))
+        self.fileName2 = str(QtGui.QFileDialog.getOpenFileName(self,'Pick a DATA file','', 'NeXuS (*.nxs)'))
         self.noSlice2,self.imgStack2,self.myShape2 = xpeem.loadHDF5(self.fileName2)
         self.imageView.setImage(self.imgStack2)
         self.changeLabelText(self.fileName2)
+
+    def loadNormFile(self):
+        self.fileNameNorm = str(QtGui.QFileDialog.getOpenFileName(self,'Pick a NORMALIZATION file','', 'NeXuS (*.nxs)'))
+        self.noSliceNorm,self.imgStackNorm,self.myShapeNorm = xpeem.loadHDF5(self.fileNameNorm)
+        self.imgNorm = np.sum(self.imgStackNorm,axis=0,dtype='float32')/len(self.imgStackNorm)
+        #rescaleNormFactor = (self.imgNorm.max()/min([myImg.min() for myImg in self.imgStack]))
+        #self.imgNorm = self.imgNorm/rescaleNormFactor
 
     def toogleStack1View(self):
         if self.normBtn.isChecked():
@@ -154,7 +154,7 @@ class myGUIapp(QtGui.QMainWindow,XPEEM_GUI.Ui_MainWindow):
         self.imageView.setImage(self.corrImgStack)
         print "CALCULATION DONE!!!"
         self.plotDrift()
-        self.actualFileName.setText("File Name: "+self.myRootFileName+" -------> CALC DONE!")
+        self.actualFileName.setText(self.myRootFileName+" -------> CALC DONE!")
 
     def calcDiffSpectra(self):
         if self.UserPickedROI == False:
@@ -193,7 +193,7 @@ class myGUIapp(QtGui.QMainWindow,XPEEM_GUI.Ui_MainWindow):
         self.imageView.setImage(self.corrDiffStack)
         print "CALCULATION DONE!!!"
         self.plotDrift()
-        self.actualFileName.setText("File Name: "+self.myRootFileName+" -------> CALC DONE!")
+        self.actualFileName.setText(self.myRootFileName+" -------> CALC DONE!")
 
     def calcDiffImages(self):
         if self.UserPickedROI == False:
@@ -232,7 +232,7 @@ class myGUIapp(QtGui.QMainWindow,XPEEM_GUI.Ui_MainWindow):
         self.imageView.setImage(self.corrDiffImg)
         print "CALCULATION DONE!!!"
         self.plotDrift()
-        self.actualFileName.setText("File Name: "+self.myRootFileName+" -------> CALC DONE!")
+        self.actualFileName.setText(self.myRootFileName+" -------> CALC DONE!")
         
     def plotDrift(self):
         self.plotView.clear()
@@ -240,14 +240,14 @@ class myGUIapp(QtGui.QMainWindow,XPEEM_GUI.Ui_MainWindow):
         self.plotView.plot(self.sxsy[:,0],self.sxsy[:,1])
 
     def showTIFF(self):
-        self.tiffFileName = str(QtGui.QFileDialog.getOpenFileName(self,'Pick a TIFF file'))
+        self.tiffFileName = str(QtGui.QFileDialog.getOpenFileName(self,'Pick a TIFF file',self.workDir,'Images (*.tif)'))
         tiffImg = skimage.io.imread(self.tiffFileName)
         self.imageView.setImage(tiffImg)
-        self.changeLabelText("File Name: "+self.tiffFileName) 
+        self.changeLabelText(self.tiffFileName) 
     
     def changeLabelText(self,myFileName):
         self.myRootFileName = myFileName[myFileName.rfind('/'):].strip('/')
-        self.actualFileName.setText("File Name: "+self.myRootFileName)
+        self.actualFileName.setText(self.myRootFileName)
     
     def autoCalcROI(self):
         #self.imageView.roi.pos()
