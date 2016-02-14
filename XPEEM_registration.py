@@ -19,10 +19,18 @@ from multiprocessing import Pool,cpu_count
 def loadHDF5(fileName):
     nxsFile = openFile(fileName)
     nxsEntry = get_NXEntry(nxsFile)
-    myImgData = eval("nxsFile.root.%s.scan_data.data_02.read()"%(nxsEntry))
+    nxsDataParts = eval("nxsFile.root.%s.scan_data"%(nxsEntry))
+    for nxsData in nxsDataParts:
+        if len(nxsData.shape) == 3:
+            myImgData = nxsData.read()
     noSlice,imgWidth,imgHeight = np.shape(myImgData)
     nxsFile.close()
     return noSlice, myImgData, np.shape(myImgData)
+
+def get_NXEntry(nxsFile):
+    tmp = str(nxsFile.root._g_getChildGroupClass)
+    nxsEntry = eval(tmp.split()[9].strip('['))
+    return nxsEntry
     
 def loadTIFF(fileName):
     thePath = fileName[:fileName.rfind('/')]
@@ -35,11 +43,6 @@ def loadTIFF(fileName):
             myImgData.append(imgTmp)
     noSlice,imgWidth,imgHeight = np.shape(myImgData)
     return noSlice, myImgData, np.shape(myImgData)
-
-def get_NXEntry(nxsFile):
-    tmp = str(nxsFile.root._g_getChildGroupClass)
-    nxsEntry = eval(tmp.split()[9].strip('['))
-    return nxsEntry
 
 def setROIregistration(myROI,myImage):
     x1,x2,y1,y2 = [myROI[0],myROI[0]+myROI[2],myROI[1],myROI[1]+myROI[3]]
