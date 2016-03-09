@@ -58,10 +58,16 @@ class myGUIapp(QtGui.QMainWindow,XPEEM_GUI.Ui_MainWindow):
                 self.imgNorm = np.sum(self.imgStackNorm,axis=0,dtype='float32')/len(self.imgStackNorm)
                 self.imgNormStack = [self.imgStack[theSlice].astype('float32')/self.imgNorm for theSlice in range(self.noSlice)]
                 self.imgNormStack = np.array(self.imgNormStack)
-                self.imageView.setImage(self.imgNormStack)
+                if self.xValues == None:
+                    self.imageView.setImage(self.imgNormStack)
+                else:
+                    self.imageView.setImage(self.imgNormStack,xvals=self.xValues)
             else:
                 self.imgNormStack = self.imgStack
-                self.imageView.setImage(self.imgNormStack)
+                if self.xValues == None:
+                    self.imageView.setImage(self.imgNormStack)
+                else:
+                    self.imageView.setImage(self.imgNormStack,xvals=self.xValues)
         elif self.loadContext == 'TWO FILES':
             if self.normBtn.isChecked():            
                 self.imgNorm = np.sum(self.imgStackNorm,axis=0,dtype='float32')/len(self.imgStackNorm)
@@ -69,33 +75,48 @@ class myGUIapp(QtGui.QMainWindow,XPEEM_GUI.Ui_MainWindow):
                 self.imgNormStack1 = np.array(self.imgNormStack1)
                 self.imgNormStack2 = [self.imgStack2[theSlice2].astype('float32')/self.imgNorm for theSlice2 in range(self.noSlice2)]
                 self.imgNormStack2 = np.array(self.imgNormStack2)
-                self.imageView.setImage(self.imgNormStack2)
+                if self.xValues2 == None:
+                    self.imageView.setImage(self.imgNormStack2)
+                else:
+                    self.imageView.setImage(self.imgNormStack2,xvals=self.xValues2)
             else:
                 self.imgNormStack1 = self.imgStack1
                 self.imgNormStack2 = self.imgStack2
-                self.imageView.setImage(self.imgNormStack2)
+                if self.xValues2 == None:
+                    self.imageView.setImage(self.imgNormStack2)
+                else:
+                    self.imageView.setImage(self.imgNormStack2,xvals=self.xValues2)
         
     def load1file(self):
         self.loadContext = 'ONE FILE'
         self.fileName = str(QtGui.QFileDialog.getOpenFileName(self,'Pick a DATA file','', 'NeXuS (*.nxs)'))
-        self.noSlice,self.imgStack,self.myShape = xpeem.loadHDF5(self.fileName)
-        self.imageView.setImage(self.imgStack)
+        self.noSlice,self.imgStack,self.myShape,self.xValues = xpeem.loadHDF5(self.fileName)
+        if self.xValues == None:
+            self.imageView.setImage(self.imgStack)
+        else:
+            self.imageView.setImage(self.imgStack,xvals=self.xValues)
         self.changeLabelText(self.fileName)
        
     def load2files(self):
         self.loadContext = 'TWO FILES'
         self.fileName1 = str(QtGui.QFileDialog.getOpenFileName(self,'Pick a DATA file','', 'NeXuS (*.nxs)'))
-        self.noSlice1,self.imgStack1,self.myShape1 = xpeem.loadHDF5(self.fileName1)
-        self.imageView.setImage(self.imgStack1)
+        self.noSlice1,self.imgStack1,self.myShape1,self.xValues1 = xpeem.loadHDF5(self.fileName1)
+        if self.xValues1 == None:
+            self.imageView.setImage(self.imgStack1)
+        else:
+            self.imageView.setImage(self.imgStack1,xvals=self.xValues1)            
         self.changeLabelText(self.fileName1)
         self.fileName2 = str(QtGui.QFileDialog.getOpenFileName(self,'Pick a DATA file','', 'NeXuS (*.nxs)'))
-        self.noSlice2,self.imgStack2,self.myShape2 = xpeem.loadHDF5(self.fileName2)
-        self.imageView.setImage(self.imgStack2)
+        self.noSlice2,self.imgStack2,self.myShape2,self.xValues2 = xpeem.loadHDF5(self.fileName2)
+        if self.xValues2 == None:
+            self.imageView.setImage(self.imgStack2)
+        else:
+            self.imageView.setImage(self.imgStack2,xvals=self.xValues2)            
         self.changeLabelText(self.fileName2)
 
     def loadNormFile(self):
         self.fileNameNorm = str(QtGui.QFileDialog.getOpenFileName(self,'Pick a NORMALIZATION file','', 'NeXuS (*.nxs)'))
-        self.noSliceNorm,self.imgStackNorm,self.myShapeNorm = xpeem.loadHDF5(self.fileNameNorm)
+        self.noSliceNorm,self.imgStackNorm,self.myShapeNorm,self.xValuesNorm = xpeem.loadHDF5(self.fileNameNorm)
         self.imgNorm = np.sum(self.imgStackNorm,axis=0,dtype='float32')/len(self.imgStackNorm)
         #rescaleNormFactor = (self.imgNorm.max()/min([myImg.min() for myImg in self.imgStack]))
         #self.imgNorm = self.imgNorm/rescaleNormFactor
@@ -151,7 +172,10 @@ class myGUIapp(QtGui.QMainWindow,XPEEM_GUI.Ui_MainWindow):
         os.system('python calc_single_spectrum.py '+str(self.workDir))
         self.fileNameRoot1 = self.fileName[self.fileName.rfind('/'):].strip('/')
         self.corrImgStack = skimage.io.imread(self.workDir+self.fileNameRoot1+'_CORR_stack.tif')
-        self.imageView.setImage(self.corrImgStack)
+        if self.xValues == None:
+            self.imageView.setImage(self.corrImgStack)
+        else:
+            self.imageView.setImage(self.corrImgStack,xvals=self.xValues)
         print "CALCULATION DONE!!!"
         self.plotDrift()
         self.actualFileName.setText(self.myRootFileName+" -------> CALC DONE!")
@@ -190,7 +214,10 @@ class myGUIapp(QtGui.QMainWindow,XPEEM_GUI.Ui_MainWindow):
         os.system('python calc_DIFF_spectra.py '+str(self.workDir))
         self.fileNameRoot1 = self.fileName1[self.fileName1.rfind('/'):].strip('/')
         self.corrDiffStack = skimage.io.imread(self.workDir+self.fileNameRoot1+'_DIFF_stack.tif')
-        self.imageView.setImage(self.corrDiffStack)
+        if self.xValues1 == None:
+            self.imageView.setImage(self.corrDiffStack)
+        else:
+            self.imageView.setImage(self.corrDiffStack,xvals=self.xValues1)
         print "CALCULATION DONE!!!"
         self.plotDrift()
         self.actualFileName.setText(self.myRootFileName+" -------> CALC DONE!")

@@ -24,8 +24,12 @@ def loadHDF5(fileName):
         if len(nxsData.shape) == 3:
             myImgData = nxsData.read()
     noSlice,imgWidth,imgHeight = np.shape(myImgData)
+    if 'actuator_1_1' in nxsDataParts:
+        xValues = nxsDataParts.actuator_1_1.read()
+    else:
+        xValues = None
     nxsFile.close()
-    return noSlice, myImgData, np.shape(myImgData)
+    return noSlice, myImgData, np.shape(myImgData), xValues
 
 def get_NXEntry(nxsFile):
     tmp = str(nxsFile.root._g_getChildGroupClass)
