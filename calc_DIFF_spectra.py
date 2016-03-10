@@ -28,7 +28,7 @@ def calc_DIFF_spectra(*args):
         myImgStack = np.concatenate((myImgStack1,myImgStack2),axis=0)    
         myShape = np.shape(myImgStack)
         refImg = myImgStack[0]            
-        noSliceNorm,imgStackNorm,myShapeNorm = xpeemreg.loadHDF5(args[2])
+        noSliceNorm,imgStackNorm,myShapeNorm,xValuesNorm = xpeemreg.loadHDF5(args[2])
         imgNorm = np.sum(imgStackNorm,axis=0,dtype='float32')/len(imgStackNorm)
         imgNormStack = [myImgStack[theSlice].astype('float32')/imgNorm for theSlice in range(noSlice)]
         imgNormStack = np.array(imgNormStack)
