@@ -14,16 +14,16 @@ import skimage.io
 
 def calc_DIFF_images(*args):
     if len(args) == 4:
-        noSlice1,myImgStack1,myShape1 = xpeemreg.loadHDF5(args[0])
-        noSlice2,myImgStack2,myShape2 = xpeemreg.loadHDF5(args[1])
+        noSlice1,myImgStack1,myShape1,xValues1 = xpeemreg.loadHDF5(args[0])
+        noSlice2,myImgStack2,myShape2,xValues2 = xpeemreg.loadHDF5(args[1])
         noSlice = noSlice1+noSlice2
         myImgStack = np.concatenate((myImgStack1,myImgStack2),axis=0)    
         myShape = np.shape(myImgStack)
         refImg = myImgStack[0]
         regImg,shiftX,shiftY = xpeemreg.reduce_DRIFT(noSlice,myImgStack,myShape,refImg,args[2],args[3])    
     elif len(args) == 5:
-        noSlice1,myImgStack1,myShape1 = xpeemreg.loadHDF5(args[0])
-        noSlice2,myImgStack2,myShape2 = xpeemreg.loadHDF5(args[1])
+        noSlice1,myImgStack1,myShape1,xValues1 = xpeemreg.loadHDF5(args[0])
+        noSlice2,myImgStack2,myShape2,xValues2 = xpeemreg.loadHDF5(args[1])
         noSlice = noSlice1+noSlice2
         myImgStack = np.concatenate((myImgStack1,myImgStack2),axis=0)    
         myShape = np.shape(myImgStack)

@@ -13,11 +13,11 @@ import skimage.io
 
 def calc_single_spectrum(*args):
     if len(args) == 3:
-        noSlice,myImgStack,myShape = xpeemreg.loadHDF5(args[0]) 
+        noSlice,myImgStack,myShape,xValues = xpeemreg.loadHDF5(args[0]) 
         refImg = myImgStack[0]            
         regImg,shiftX,shiftY = xpeemreg.reduce_DRIFT(noSlice,myImgStack,myShape,refImg,args[1],args[2])    
     elif len(args) == 4:
-        noSlice,myImgStack,myShape = xpeemreg.loadHDF5(args[0]) 
+        noSlice,myImgStack,myShapexValues = xpeemreg.loadHDF5(args[0]) 
         refImg = myImgStack[0]            
         noSliceNorm,imgStackNorm,myShapeNorm = xpeemreg.loadHDF5(args[1])
         imgNorm = np.sum(imgStackNorm,axis=0,dtype='float32')/len(imgStackNorm)
@@ -52,3 +52,4 @@ def main():
 
 if __name__=='__main__':
     main()
+   
