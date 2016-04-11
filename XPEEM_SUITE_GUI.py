@@ -34,7 +34,7 @@ elif check_platform == "Windows":
     scripts_path = os.getcwd()+"\\"
 elif check_platform == "Linux":
     scripts_path = os.getcwd()+"/"
-    
+
 class myGUIapp(QtGui.QMainWindow,XPEEM_GUI.Ui_MainWindow):
 	def __init__(self,parent=None):
 		super(myGUIapp,self).__init__(parent)
@@ -54,20 +54,20 @@ class myGUIapp(QtGui.QMainWindow,XPEEM_GUI.Ui_MainWindow):
 		self.normBtn.stateChanged.connect(self.normalizeStack)
 		self.calcROIBtn.stateChanged.connect(self.autoCalcROI)
 		self.calcROIBtn.setChecked(True)
-		self.dataDirectory = "Z:\com-hermes\\"
-		
+		self.dataDirectory = ""
+
 	def chooseWorkDir(self):
-		self.workDir = str(QtGui.QFileDialog.getExistingDirectory(self,"Select your working directory"))+'/'      
-		
+		self.workDir = str(QtGui.QFileDialog.getExistingDirectory(self,"Select your working directory"))+'/'
+
 	def pickROI(self):
 		self.UserPickedROI = True
 		self.ROIposition = self.imageView.roi.pos()
 		self.ROIsize = self.imageView.roi.size()
 		self.myPickROI = (np.int(self.ROIposition[0]),np.int(self.ROIposition[1]),np.int(self.ROIsize[0]),np.int(self.ROIsize[1]))
-		
+
 	def normalizeStack(self):
 		if self.loadContext == 'ONE FILE':
-			if self.normBtn.isChecked():            
+			if self.normBtn.isChecked():
 				self.imgNorm = np.sum(self.imgStackNorm,axis=0,dtype='float32')/len(self.imgStackNorm)
 				self.imgNormStack = [self.imgStack[theSlice].astype('float32')/self.imgNorm for theSlice in range(self.noSlice)]
 				self.imgNormStack = np.array(self.imgNormStack)
@@ -82,7 +82,7 @@ class myGUIapp(QtGui.QMainWindow,XPEEM_GUI.Ui_MainWindow):
 				else:
 					self.imageView.setImage(self.imgNormStack,xvals=self.xValues)
 		elif self.loadContext == 'TWO FILES':
-			if self.normBtn.isChecked():            
+			if self.normBtn.isChecked():
 				self.imgNorm = np.sum(self.imgStackNorm,axis=0,dtype='float32')/len(self.imgStackNorm)
 				self.imgNormStack1 = [self.imgStack1[theSlice1].astype('float32')/self.imgNorm for theSlice1 in range(self.noSlice1)]
 				self.imgNormStack1 = np.array(self.imgNormStack1)
@@ -99,7 +99,7 @@ class myGUIapp(QtGui.QMainWindow,XPEEM_GUI.Ui_MainWindow):
 					self.imageView.setImage(self.imgNormStack2)
 				else:
 					self.imageView.setImage(self.imgNormStack2,xvals=self.xValues2)
-		
+
 	def load1file(self):
 		self.loadContext = 'ONE FILE'
 		self.fileName = str(QtGui.QFileDialog.getOpenFileName(self,'Pick a DATA file',self.dataDirectory, 'NeXuS HDF5 (*.nxs *.hdf5)'))
@@ -109,7 +109,7 @@ class myGUIapp(QtGui.QMainWindow,XPEEM_GUI.Ui_MainWindow):
 		else:
 			self.imageView.setImage(self.imgStack,xvals=self.xValues)
 		self.changeLabelText(self.fileName)
-		
+
 	def load2files(self):
 		self.loadContext = 'TWO FILES'
 		self.fileName1 = str(QtGui.QFileDialog.getOpenFileName(self,'Pick a DATA file',self.dataDirectory, 'NeXuS (*.nxs)'))
@@ -142,7 +142,7 @@ class myGUIapp(QtGui.QMainWindow,XPEEM_GUI.Ui_MainWindow):
 			self.imageView.setImage(self.corrStack1,xvals=self.xValues1)
 		self.switchStackShow2Btn.setChecked(False)
 		self.changeLabelText(self.fileName1)
-			
+
 	def toogleStack2View(self):
 		self.corrDiffStack = skimage.io.imread(self.workDir+self.fileNameRoot1+'_DIFF.tif')
 		if self.xValues1 == None:
@@ -151,9 +151,9 @@ class myGUIapp(QtGui.QMainWindow,XPEEM_GUI.Ui_MainWindow):
 			self.imageView.setImage(self.corrDiffStack,xvals=self.xValues1)
 		self.switchStackShow1Btn.setChecked(False)
 		self.changeLabelText(self.fileName2)
-			
 
-	def calcSingleSpectrum(self):        
+
+	def calcSingleSpectrum(self):
 		if self.UserPickedROI == False:
 			imageSize = self.imgNormStack[0].shape
 			self.myROI = (imageSize[0]*1./4,imageSize[1]*1./4,imageSize[0]*1./2,imageSize[1]*1./2)
@@ -279,7 +279,7 @@ class myGUIapp(QtGui.QMainWindow,XPEEM_GUI.Ui_MainWindow):
 		self.switchStackShow1Btn.setChecked(False)
 		self.switchStackShow2Btn.setChecked(True)
 
-		
+
 	def plotDrift(self):
 		self.plotView.clear()
 		self.sxsy = np.loadtxt(self.workDir+self.fileNameRoot1+"_shifts.txt")
@@ -289,19 +289,19 @@ class myGUIapp(QtGui.QMainWindow,XPEEM_GUI.Ui_MainWindow):
 		self.tiffFileName = str(QtGui.QFileDialog.getOpenFileName(self,'Pick a TIFF file',self.workDir,'Images (*.tif)'))
 		tiffImg = skimage.io.imread(self.tiffFileName)
 		self.imageView.setImage(tiffImg)
-		self.changeLabelText(self.tiffFileName) 
-	
+		self.changeLabelText(self.tiffFileName)
+
 	def changeLabelText(self,myFileName):
 		self.myRootFileName = myFileName[myFileName.rfind('/'):].strip('/')
 		self.actualFileName.setText(self.myRootFileName)
-	
+
 	def autoCalcROI(self):
 		#self.imageView.roi.pos()
 		if self.calcROIBtn.isChecked():
 			self.imageView.roi.sigRegionChanged.connect(self.imageView.roiChanged)
 		else:
 			self.imageView.roi.sigRegionChanged.disconnect()
-			
+
 
 	def clearVariables(self):
 		varList = ['self.fileName',
@@ -330,8 +330,8 @@ class myGUIapp(QtGui.QMainWindow,XPEEM_GUI.Ui_MainWindow):
 				   ]
 		for myVar in varList:
 			exec('%s = None'%myVar)
-		
-def main():		
+
+def main():
 	app = QtGui.QApplication(sys.argv)
 	win = myGUIapp()
 	win.show()
