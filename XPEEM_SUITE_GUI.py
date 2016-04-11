@@ -302,35 +302,6 @@ class myGUIapp(QtGui.QMainWindow,XPEEM_GUI.Ui_MainWindow):
 		else:
 			self.imageView.roi.sigRegionChanged.disconnect()
 
-
-	def clearVariables(self):
-		varList = ['self.fileName',
-				   'self.fileName1',
-				   'self.fileName2',
-				   'self.fileNameNorm',
-				   'self.imgStack',
-				   'self.imgStack1',
-				   'self.imgStack2',
-				   'self.imgNorm',
-				   'self.imgNormStack',
-				   'self.imgNormStack1',
-				   'self.imgNormStack2',
-				   'self.myROI',
-				   'self.myShape',
-				   'self.myShape1',
-				   'self.myShape2',
-				   'self.corrImgStack',
-				   'self.corrDiffImg',
-				   'self.corrDiffStack',
-				   'self.noSliceNorm',
-				   'self.imgStackNorm',
-				   'self.myShapeNorm',
-				   'self.sxsy',
-				   'tiffFileName',
-				   ]
-		for myVar in varList:
-			exec('%s = None'%myVar)
-
 def main():
 	app = QtGui.QApplication(sys.argv)
 	win = myGUIapp()
