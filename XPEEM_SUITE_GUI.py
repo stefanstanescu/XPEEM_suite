@@ -19,10 +19,11 @@ import os
 import platform
 import numpy as np
 import sys
-from PyQt4 import QtGui
+from PyQt4 import QtGui,QtCore
 import XPEEM_GUI
 import XPEEM_registration as xpeem
 import skimage.io
+import time
 
 #sys.path.append('C:\Anaconda2\Scripts\XPEEM_data_reducer\\')
 
@@ -42,6 +43,7 @@ class myGUIapp(QtGui.QMainWindow,XPEEM_GUI.Ui_MainWindow):
         self.chooseWorkDirectoryBtn.clicked.connect(self.chooseWorkDir)
         self.load1FileBtn.clicked.connect(self.load1file)
         self.load2FilesBtn.clicked.connect(self.load2files)
+        self.load4FilesBtn.clicked.connect(self.load4files)
         self.loadNormFileBtn.clicked.connect(self.loadNormFile)
         self.showTIFFStackBtn.clicked.connect(self.showTIFF)
         self.pickROIBtn.clicked.connect(self.pickROI)
@@ -49,6 +51,7 @@ class myGUIapp(QtGui.QMainWindow,XPEEM_GUI.Ui_MainWindow):
         self.calcSingleSpectrumBtn.clicked.connect(self.calcSingleSpectrum)
         self.calcDiffSpectraBtn.clicked.connect(self.calcDiffSpectra)
         self.calcDiffImagesBtn.clicked.connect(self.calcDiffImages)
+        self.calcDiff4ImagesBtn.clicked.connect(self.calcAbsNormDiffImages)
         self.switchStackShow1Btn.toggled.connect(self.toogleStack1View)
         self.switchStackShow2Btn.toggled.connect(self.toogleStack2View)
         self.normBtn.stateChanged.connect(self.normalizeStack)
@@ -56,8 +59,14 @@ class myGUIapp(QtGui.QMainWindow,XPEEM_GUI.Ui_MainWindow):
         self.calcROIBtn.stateChanged.connect(self.autoCalcROI)
         self.calcROIBtn.setChecked(False)
         self.imageView.roi.sigRegionChanged.disconnect()
-        self.upsamplingFactor = 100
+        self.calcTimer = QtCore.QTimer()
+        self.calcTimer.timeout.connect(self.countdown)
         self.dataDirectory = ""
+
+    def countdown(self):
+        mytime = time.time()-self.initTime
+        self.lcdTimer.display(mytime)
+        time.sleep(0.1)
 
     def chooseWorkDir(self):
         self.workDir = str(QtGui.QFileDialog.getExistingDirectory(self,"Select your working directory"))+'/'
@@ -102,6 +111,30 @@ class myGUIapp(QtGui.QMainWindow,XPEEM_GUI.Ui_MainWindow):
                     self.imageView.setImage(self.imgNormStack2)
                 else:
                     self.imageView.setImage(self.imgNormStack2,xvals=self.xValues2)
+        elif self.loadContext == 'FOUR FILES':
+            if self.normBtn.isChecked():
+                self.imgNorm = np.sum(self.imgStackNorm,axis=0,dtype='float32')/len(self.imgStackNorm)
+                self.imgNormStack1 = [self.imgStack1[theSlice1].astype('float32')/self.imgNorm for theSlice1 in range(self.noSlice1)]
+                self.imgNormStack1 = np.array(self.imgNormStack1)
+                self.imgNormStack2 = [self.imgStack2[theSlice2].astype('float32')/self.imgNorm for theSlice2 in range(self.noSlice2)]
+                self.imgNormStack2 = np.array(self.imgNormStack2)
+                self.imgNormStack3 = [self.imgStack3[theSlice3].astype('float32')/self.imgNorm for theSlice3 in range(self.noSlice3)]
+                self.imgNormStack3 = np.array(self.imgNormStack3)
+                self.imgNormStack4 = [self.imgStack4[theSlice4].astype('float32')/self.imgNorm for theSlice4 in range(self.noSlice4)]
+                self.imgNormStack4 = np.array(self.imgNormStack4)
+                if self.xValues4 == None:
+                    self.imageView.setImage(self.imgNormStack4)
+                else:
+                    self.imageView.setImage(self.imgNormStack4,xvals=self.xValues4)
+            else:
+                self.imgNormStack1 = self.imgStack1
+                self.imgNormStack2 = self.imgStack2
+                self.imgNormStack3 = self.imgStack3
+                self.imgNormStack4 = self.imgStack4
+                if self.xValues4 == None:
+                    self.imageView.setImage(self.imgNormStack4)
+                else:
+                    self.imageView.setImage(self.imgNormStack4,xvals=self.xValues4)
 
     def load1file(self):
         self.loadContext = 'ONE FILE'
@@ -130,6 +163,37 @@ class myGUIapp(QtGui.QMainWindow,XPEEM_GUI.Ui_MainWindow):
             self.imageView.setImage(self.imgStack2,xvals=self.xValues2)
         self.changeLabelText(self.fileName2)
 
+    def load4files(self):
+        self.loadContext = 'FOUR FILES'
+        self.fileName1 = str(QtGui.QFileDialog.getOpenFileName(self,'Pick a DATA file',self.dataDirectory, 'NeXuS (*.nxs)'))
+        self.noSlice1,self.imgStack1,self.myShape1,self.xValues1 = xpeem.loadHDF5(self.fileName1)
+        if self.xValues1 == None:
+            self.imageView.setImage(self.imgStack1)
+        else:
+            self.imageView.setImage(self.imgStack1,xvals=self.xValues1)
+        self.changeLabelText(self.fileName1)
+        self.fileName2 = str(QtGui.QFileDialog.getOpenFileName(self,'Pick a DATA file',self.dataDirectory, 'NeXuS (*.nxs)'))
+        self.noSlice2,self.imgStack2,self.myShape2,self.xValues2 = xpeem.loadHDF5(self.fileName2)
+        if self.xValues2 == None:
+            self.imageView.setImage(self.imgStack2)
+        else:
+            self.imageView.setImage(self.imgStack2,xvals=self.xValues2)
+        self.changeLabelText(self.fileName2)
+        self.fileName3 = str(QtGui.QFileDialog.getOpenFileName(self,'Pick a DATA file',self.dataDirectory, 'NeXuS (*.nxs)'))
+        self.noSlice3,self.imgStack3,self.myShape3,self.xValues3 = xpeem.loadHDF5(self.fileName3)
+        if self.xValues3 == None:
+            self.imageView.setImage(self.imgStack3)
+        else:
+            self.imageView.setImage(self.imgStack3,xvals=self.xValues3)
+        self.changeLabelText(self.fileName3)
+        self.fileName4 = str(QtGui.QFileDialog.getOpenFileName(self,'Pick a DATA file',self.dataDirectory, 'NeXuS (*.nxs)'))
+        self.noSlice4,self.imgStack4,self.myShape4,self.xValues4 = xpeem.loadHDF5(self.fileName4)
+        if self.xValues4 == None:
+            self.imageView.setImage(self.imgStack4)
+        else:
+            self.imageView.setImage(self.imgStack4,xvals=self.xValues4)
+        self.changeLabelText(self.fileName4)
+
     def loadNormFile(self):
         self.fileNameNorm = str(QtGui.QFileDialog.getOpenFileName(self,'Pick a NORMALIZATION file',self.dataDirectory, 'NeXuS (*.nxs)'))
         self.noSliceNorm,self.imgStackNorm,self.myShapeNorm,self.xValuesNorm = xpeem.loadHDF5(self.fileNameNorm)
@@ -157,6 +221,8 @@ class myGUIapp(QtGui.QMainWindow,XPEEM_GUI.Ui_MainWindow):
 
 
     def calcSingleSpectrum(self):
+        self.initTime  = time.time()
+        self.calcTimer.start()
         if self.UserPickedROI == False:
             self.normalizeStack()
             imageSize = self.imgNormStack[0].shape
@@ -164,6 +230,7 @@ class myGUIapp(QtGui.QMainWindow,XPEEM_GUI.Ui_MainWindow):
         else:
             self.myROI = self.myPickROI
         print "THE ROI IS ======> ",self.myROI
+        self.upsamplingFactor = self.upsamplingLine.text()
         #print self.imgNorm
         if self.normBtn.isChecked():
             with open(self.workDir+'Input_Args.txt','w') as myInput:
@@ -193,10 +260,13 @@ class myGUIapp(QtGui.QMainWindow,XPEEM_GUI.Ui_MainWindow):
         print "CALCULATION DONE!!!"
         self.plotDrift()
         self.actualFileName.setText(self.myRootFileName+" -------> CALC DONE!")
+        self.calcTimer.stop()
         #self.switchStackShow1Btn.setChecked(False)
         #self.switchStackShow2Btn.setChecked(True)
 
     def calcDiffSpectra(self):
+        self.initTime  = time.time()
+        self.calcTimer.start()
         if self.UserPickedROI == False:
             self.normalizeStack()
             imageSize = self.imgNormStack1[0].shape
@@ -204,6 +274,7 @@ class myGUIapp(QtGui.QMainWindow,XPEEM_GUI.Ui_MainWindow):
         else:
             self.myROI = self.myPickROI
         print "THE ROI IS ======> ",self.myROI
+        self.upsamplingFactor = self.upsamplingLine.text()
         #print self.imgNorm
         if self.normBtn.isChecked():
             with open(self.workDir+'Input_Args.txt','w') as myInput:
@@ -239,9 +310,12 @@ class myGUIapp(QtGui.QMainWindow,XPEEM_GUI.Ui_MainWindow):
         self.actualFileName.setText(self.myRootFileName+" -------> CALC DONE!")
         self.switchStackShow1Btn.setChecked(False)
         self.switchStackShow2Btn.setChecked(True)
+        self.calcTimer.stop()
 
 
     def calcDiffImages(self):
+        self.initTime  = time.time()
+        self.calcTimer.start()
         if self.UserPickedROI == False:
             self.normalizeStack()
             imageSize = self.imgNormStack1[0].shape
@@ -249,6 +323,7 @@ class myGUIapp(QtGui.QMainWindow,XPEEM_GUI.Ui_MainWindow):
         else:
             self.myROI = self.myPickROI
         print "THE ROI IS ======> ",self.myROI
+        self.upsamplingFactor = self.upsamplingLine.text()
         #print self.imgNorm
         if self.normBtn.isChecked():
             with open(self.workDir+'Input_Args.txt','w') as myInput:
@@ -281,7 +356,60 @@ class myGUIapp(QtGui.QMainWindow,XPEEM_GUI.Ui_MainWindow):
         self.actualFileName.setText(self.myRootFileName+" -------> CALC DONE!")
         self.switchStackShow1Btn.setChecked(False)
         self.switchStackShow2Btn.setChecked(True)
+        self.calcTimer.stop()
 
+    def calcAbsNormDiffImages(self):
+        self.initTime  = time.time()
+        self.calcTimer.start()
+        if self.UserPickedROI == False:
+            self.normalizeStack()
+            imageSize = self.imgNormStack1[0].shape
+            self.myROI = (imageSize[0]*1./4,imageSize[1]*1./4,imageSize[0]*1./2,imageSize[1]*1./2)
+        else:
+            self.myROI = self.myPickROI
+        print "THE ROI IS ======> ",self.myROI
+        self.upsamplingFactor = self.upsamplingLine.text()
+        #print self.imgNorm
+        if self.normBtn.isChecked():
+            with open(self.workDir+'Input_Args.txt','w') as myInput:
+                myInput.write(self.fileName1)
+                myInput.write('\n')
+                myInput.write(self.fileName2)
+                myInput.write('\n')
+                myInput.write(self.fileName3)
+                myInput.write('\n')
+                myInput.write(self.fileName4)
+                myInput.write('\n')
+                myInput.write(self.fileNameNorm)
+                myInput.write('\n')
+                myInput.write(str(self.myROI))
+                myInput.write('\n')
+                myInput.write(str(self.upsamplingFactor))
+                myInput.write('\n')
+        else:
+            with open(self.workDir+'Input_Args.txt','w') as myInput:
+                myInput.write(self.fileName1)
+                myInput.write('\n')
+                myInput.write(self.fileName2)
+                myInput.write('\n')
+                myInput.write(self.fileName3)
+                myInput.write('\n')
+                myInput.write(self.fileName4)
+                myInput.write('\n')
+                myInput.write(str(self.myROI))
+                myInput.write('\n')
+                myInput.write(str(self.upsamplingFactor))
+                myInput.write('\n')
+        os.system('python ' + scripts_path + 'calc_ABS_NORM_DIFF_images.py '+str(self.workDir))
+        self.fileNameRoot1 = self.fileName1[self.fileName1.rfind('/'):].strip('/')
+        self.corrDiffImg = skimage.io.imread(self.workDir+self.fileNameRoot1+'_DIFF.tif')
+        self.imageView.setImage(self.corrDiffImg)
+        print "CALCULATION DONE!!!"
+        self.plotDrift()
+        self.actualFileName.setText(self.myRootFileName+" -------> CALC DONE!")
+        self.switchStackShow1Btn.setChecked(False)
+        self.switchStackShow2Btn.setChecked(True)
+        self.calcTimer.stop()
 
     def plotDrift(self):
         self.plotView.clear()
